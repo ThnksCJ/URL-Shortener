@@ -8,7 +8,21 @@
 </head>
 <body>
 <div style="text-align: center;">
-    <h1>Your code is <%= code %></h1>
+    <h1>Your URL is: </h1>
+    <input type="text" value='<%= code %>' id="urlCode">
+    <button onclick="copyCode()">Copy link</button>
 </div>
 </body>
+
+<script>
+    function copyCode(){
+
+    const copyText = document.getElementById("urlCode");
+
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+    navigator.clipboard.writeText(copyText.value);
+    }
+</script>
 </html>

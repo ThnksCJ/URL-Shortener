@@ -41,6 +41,7 @@ app.post('/shorten', urlencodedParser, (req, res) => {
         const dbo = db.db("url-shortener");
 
         const code = makecode(5);
+        const displayurl = req.protocol + "://" + req.headers.host + "/get/" + code;
         const url = req.body.url;
 
         dbo.collection("links").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
@@ -49,12 +50,13 @@ app.post('/shorten', urlencodedParser, (req, res) => {
                 let json = result.find(x => x.url === url);
 
                 const existingCode = json["code"];
-                res.render(path.join(__dirname, '/views/code.html'), {code: existingCode});
+                const displayurl = req.protocol + "://" + req.headers.host + "/get/" + existingCode;
+                res.render(path.join(__dirname, '/views/code.html'), {code: displayurl});
             }else{
                 const data = {url: url, code: code};
                 dbo.collection("links").insertOne(data, function(err) {
                     if (err) throw err;
-                    res.render(path.join(__dirname, '/views/code.html'), {code: code});
+                    res.render(path.join(__dirname, '/views/code.html'), {code: displayurl});
                     db.close();
                 });
             }
