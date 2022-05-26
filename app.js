@@ -72,7 +72,7 @@ app.get('/get/:code', (req, res) => {
         dbo.collection("links").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
             if (err) throw err;
             if(result.find(x => x.code === req.params.code)){
-                let json = result.find(x => x.url === url);
+                let json = result.find(x => x.code === req.params.code);
 
                 const url = json["url"];
 
