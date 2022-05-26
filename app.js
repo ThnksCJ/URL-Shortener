@@ -1,4 +1,5 @@
 const log = require("@thnkscj/logger-plus");
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const express = require('express');
 const path = require('path');
@@ -8,6 +9,8 @@ const port = 80
 const MongoClient = require('mongodb').MongoClient;
 const url = "";
 
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 app.use(cors());
 app.disable('x-powered-by'); // disable powered by express
 app.use((req, res, next) => {
@@ -15,11 +18,13 @@ app.use((req, res, next) => {
     next();
 });
 
+const urlencodedParser = bodyParser.urlencoded({extended: false});
+
 function makecode(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++ ) {
         result += characters.charAt(Math.floor(Math.random() *
             charactersLength));
     }
@@ -27,22 +32,35 @@ function makecode(length) {
 }
 
 app.get('/', (req, res) => {
-    res.type('text/plain');
-    res.send('url shortener');
+    res.sendFile(path.join(__dirname, '/views/index.html'));
 })
 
-app.get('/shorten/:url', (req, res) => {
+app.post('/shorten', urlencodedParser, (req, res) => {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         const dbo = db.db("url-shortener");
-        var myobj = { url: req.params.url, code: makecode(5) };
-        dbo.collection("links").insertOne(myobj, function(err, res) {
+
+        const code = makecode(5);
+        const url = req.body.url;
+
+        dbo.collection("links").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
             if (err) throw err;
-            console.log("1 document inserted");
-            db.close();
+            if(result.find(x => x.url === url)){
+                let json = result.find(x => x.url === url);
+
+                const existingCode = json["code"];
+                res.render(path.join(__dirname, '/views/code.html'), {code: existingCode});
+            }else{
+                const data = {url: url, code: code};
+                dbo.collection("links").insertOne(data, function(err) {
+                    if (err) throw err;
+                    res.render(path.join(__dirname, '/views/code.html'), {code: code});
+                    db.close();
+                });
+            }
         });
     });
-})
+});
 
 app.get('/get/:code', (req, res) => {
     MongoClient.connect(url, function (err, db) {
@@ -55,7 +73,7 @@ app.get('/get/:code', (req, res) => {
 
             const url = json["url"];
 
-            res.redirect('http://' + url + '/');
+            res.redirect(url);
             db.close();
         });
     });
