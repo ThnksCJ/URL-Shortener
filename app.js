@@ -52,6 +52,7 @@ app.post('/shorten', urlencodedParser, (req, res) => {
                 const existingCode = json["code"];
                 const displayurl = req.protocol + "://" + req.headers.host + "/get/" + existingCode;
                 res.render(path.join(__dirname, '/views/code.html'), {code: displayurl});
+                db.close();
             }else{
                 const data = {url: url, code: code};
                 dbo.collection("links").insertOne(data, function(err) {
@@ -68,15 +69,18 @@ app.get('/get/:code', (req, res) => {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         const dbo = db.db("url-shortener");
-        dbo.collection("links").find({}, {projection: {_id: 0}}).toArray(function (err, result) {
+        dbo.collection("links").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
             if (err) throw err;
+            if(result.find(x => x.code === req.params.code)){
+                let json = result.find(x => x.url === url);
 
-            const json = result.find(x => x.code === req.params.code);
+                const url = json["url"];
 
-            const url = json["url"];
-
-            res.redirect(url);
-            db.close();
+                res.redirect(url);
+                db.close();
+            }else{
+                res.redirect(req.protocol + "://" + req.headers.host);
+            }
         });
     });
 })
