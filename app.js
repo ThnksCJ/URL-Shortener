@@ -4,7 +4,7 @@ const cors = require('cors');
 const express = require('express');
 const path = require('path');
 const app = express();
-const port = 80
+const port = 80;
 
 const MongoClient = require('mongodb').MongoClient;
 const url = "";
@@ -20,14 +20,10 @@ app.use((req, res, next) => {
 
 const urlencodedParser = bodyParser.urlencoded({extended: false});
 
-function makecode(length) {
+function makeCode() {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() *
-            charactersLength));
-    }
+    for (let i = 0; i < 5; i++ ) result += characters.charAt(Math.floor(Math.random() * characters.length));
     return result;
 }
 
@@ -40,24 +36,21 @@ app.post('/shorten', urlencodedParser, (req, res) => {
         if (err) throw err;
         const dbo = db.db("url-shortener");
 
-        const code = makecode(5);
-        const displayurl = (req.headers['x-forwarded-proto'] === undefined ? "http" : "https") + "://" + req.headers.host + "/get/" + code;
-        const url = req.body.url;
+        const code = makeCode(), url = req.body.url;
+        const shortURL = (req.headers['x-forwarded-proto'] === undefined ? "http" : "https") + "://" + req.headers.host + "/get/";
 
         dbo.collection("links").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
             if (err) throw err;
-            if(result.find(x => x.url === url)){
-                let json = result.find(x => x.url === url);
 
-                const existingCode = json["code"];
-                const displayurl = (req.headers['x-forwarded-proto'] === undefined ? "http" : "https") + "://" + req.headers.host + "/get/" + existingCode;
-                res.render(path.join(__dirname, '/views/code.html'), {code: displayurl});
+            let json = result.find(x => x.url === url);
+
+            if(json){
+                res.render(path.join(__dirname, '/views/code.html'), {code: shortURL + json["code"]});
                 db.close();
             }else{
-                const data = {url: url, code: code};
-                dbo.collection("links").insertOne(data, function(err) {
+                dbo.collection("links").insertOne({url: url, code: code}, function(err) {
                     if (err) throw err;
-                    res.render(path.join(__dirname, '/views/code.html'), {code: displayurl});
+                    res.render(path.join(__dirname, '/views/code.html'), {code: shortURL + code});
                     db.close();
                 });
             }
@@ -71,12 +64,11 @@ app.get('/get/:code', (req, res) => {
         const dbo = db.db("url-shortener");
         dbo.collection("links").find({}, { projection: { _id: 0 } }).toArray(function(err, result) {
             if (err) throw err;
-            if(result.find(x => x.code === req.params.code)){
-                let json = result.find(x => x.code === req.params.code);
 
-                const url = json["url"];
+            let json = result.find(x => x.code === req.params.code);
 
-                res.redirect(url);
+            if(json){
+                res.redirect(json["url"]);
                 db.close();
             }else{
                 res.redirect((req.headers['x-forwarded-proto'] === undefined ? "http" : "https") + "://" + req.headers.host);
