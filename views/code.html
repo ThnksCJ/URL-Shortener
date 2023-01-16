@@ -1,28 +1,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+          name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
     <title>URL Shortener</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div style="text-align: center;">
     <h1>Your URL is: </h1>
-    <input type="text" value='<%= code %>' id="urlCode">
+    <input id="urlCode" type="text" value='<%= code %>'>
     <button onclick="copyCode()">Copy link</button>
 </div>
 </body>
 
 <script>
-    function copyCode(){
+    function copyCode() {
 
-    const copyText = document.getElementById("urlCode");
+        const copyText = document.getElementById("urlCode");
 
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); /* For mobile devices */
 
-    navigator.clipboard.writeText(copyText.value);
+        navigator.clipboard.writeText(copyText.value);
     }
 </script>
 </html>

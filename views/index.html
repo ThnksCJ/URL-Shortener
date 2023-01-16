@@ -3,8 +3,8 @@
 <head>
     <title>URL Shortener</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container">
@@ -12,9 +12,10 @@
     <form action="/shorten" method="POST">
         <div class="form-group">
             <label for="url">URL </label>
-            <input type="url" pattern="http.*://.*" class="form-control" id="url" required="required" placeholder="Enter url" name="url">
+            <input class="form-control" id="url" name="url" pattern="http.*://.*" placeholder="Enter url"
+                   required="required" type="url">
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button class="btn btn-primary" type="submit">Submit</button>
     </form>
 </div>
 </body>
